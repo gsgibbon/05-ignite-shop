@@ -16,7 +16,7 @@ interface ProductProps {
         description: string
         defaultPriceId: string
     }
-}
+};
 
 export default function Product({ product }: ProductProps) {
     const [isCreatingCheckoutSession, setIsCreatingCheckoutSession] = useState(false)
@@ -36,8 +36,8 @@ export default function Product({ product }: ProductProps) {
             // conectar com uma ferramente de observabilidade (DataDog ou Sentry)
             setIsCreatingCheckoutSession(false)
 
-            alert(`Falha ao direcionar ao checkout!);
-            }`)
+            alert(`Falha ao direcionar ao checkout!`)
+            console.error(error)
         }
     }
 
@@ -59,7 +59,7 @@ export default function Product({ product }: ProductProps) {
                 <p>{product.description}</p>
 
                 <button disabled={isCreatingCheckoutSession} onClick={handleBuyProduct}>
-                  Comprar agora
+                  Colocar na sacola
                 </button>
             </ProductDetails>
           </ProductContainer>
@@ -95,7 +95,7 @@ export const getStaticProps: GetStaticProps<ProductProps, {id: string}> = async 
                 style: 'currency',
                 currency: 'BRL'
             }).format(price.unit_amount! / 100),
-            description: product.description,
+            description: product.description || "Descrição indisponível",
             defaultPriceId: price.id,
         }
     },

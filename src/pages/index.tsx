@@ -1,33 +1,75 @@
-import { GetStaticProps } from "next"
+import { HomeContainer, Product } from "@/styles/pages/home";
 
 import Image from "next/image";
+import { CaretLeft, CaretRight, Handbag } from "@phosphor-icons/react";
 
-import { useKeenSlider } from "keen-slider/react"
-import { stripe } from "@/lib/stripe"
+import { GetStaticProps } from "next";
 
-import { HomeContainer, Product } from "@/styles/pages/home"
+import { useKeenSlider } from "keen-slider/react";
+import { stripe } from "@/lib/stripe";
 
 import 'keen-slider/keen-slider.min.css'
 import Stripe from "stripe";
 import Link from "next/link";
 import Head from "next/head";
+import { useContext, useState } from "react";
+import { ShoppingContext } from "@/context/shoppingContext";
+import { ScrollLeft, ScrollRight } from "@/styles/components/scrollButton";
 
-interface HomeProps {
-  products: {
-    id: string,
-    name: string,
-    imageUrl: string,
-    price: string
-  }[]
+interface ProductTypes {
+  id: string
+  name: string
+  imageUrl: string
+  price: string
+  description: string
+  defaultPriceId: string
+  quantity: number
 }
 
+interface HomeProps {
+  products: ProductTypes[]
+};
+
 export default function Home({ products }: HomeProps) {
-  const [sliderRef] = useKeenSlider({
-    slides: {
-      perView: 3,
-      spacing: 48,
-    }
-  })
+  const [currentSlider, setCurrentSlider] = useState(0);
+
+  const { addToCart } = useContext(ShoppingContext);
+
+  const [sliderRef, instanceRef] = useKeenSlider({
+    mode: 'free-snap',
+    breakpoints: {
+      "(min-width: 400px)": {
+        slides: {
+          origin: 'center',
+          perView: 1,
+          spacing: 8},
+      },
+      "(min-width: 1000px)": {
+        slides: {
+          origin: 'center',
+          perView: 3, 
+          spacing: 48
+        },
+      },
+      "(min-width: 1400px)": {
+        slides: {
+          origin: 'center',
+          perView: 3,
+          spacing: 48
+        },
+      },
+    },
+    slideChanged(slider) {
+      setCurrentSlider(slider.track.details.rel);
+    },
+  });
+
+  function handleAddToCart (e: React.MouseEvent<HTMLButtonElement>, product: ProductTypes) { 
+    e.preventDefault();
+
+    addToCart(product);
+  };
+
 
   return (
     <>
@@ -36,20 +78,39 @@ export default function Home({ products }: HomeProps) {
       </Head>
 
       <HomeContainer ref={sliderRef} className="keen-slider">
-        {products.map(product => {
-          return (
-            <Link href={`/product/${product.id}`} key={product.id} prefetch={false}>
-              <Product className="keen-slider__slide">
-                <Image src={product.imageUrl} width={520} height={480} alt=""/>
-                
-                <footer>
-                  <strong>{product.name}</strong>
-                  <span>{product.price}</span>
-                </footer>
-              </Product>
-            </Link>
-          )
-        })}
+        {currentSlider !== 0 &&
+          <ScrollLeft 
+            onClick={() => instanceRef.current?.prev()}
+          >
+            <CaretLeft size={48} />
+          </ScrollLeft>
+        }
+          {products.map(product => {
+            return (
+              <Link href={`/product/${product.id}`} key={product.id} prefetch={false}>
+                <Product className="keen-slider__slide">
+                  <Image src={product.imageUrl} width={520} height={520} alt=""/>
+                  
+                  <footer>
+                    <div>
+                      <strong>{product.name}</strong>
+                      <span>{product.price}</span>
+                    </div>
+                    <button onClick={(e) => handleAddToCart(e, product)}>
+                      <Handbag size={32} weight='bold'/>
+                    </button>
+                  </footer>
+                </Product>
+              </Link>
+            )
+          })}
+          {currentSlider !== instanceRef.current?.track.details.maxIdx && 
+            <ScrollRight 
+              onClick={() => instanceRef.current?.next()}
+            >
+              <CaretRight size={48} />
+          </ScrollRight>
+          }
       </HomeContainer> 
     </>
   )
@@ -71,13 +132,15 @@ export const getStaticProps: GetStaticProps = async () => {
         style: 'currency',
         currency: 'BRL',
       }).format(price.unit_amount! / 100),
-    }
-  })
+      description: product.description,
+      defaultPriceId: product.default_price,
+    };
+  });
 
   return {
     props: {
       products
     },
     revalidate: 60 * 60 * 2,
-  }
-}
+  };
+};
