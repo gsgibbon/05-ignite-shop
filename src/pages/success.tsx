@@ -5,7 +5,6 @@ import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import Stripe from "stripe";
-//import Stripe from "stripe";
 
 interface SuccessProps {
     customerName: string,
@@ -64,7 +63,6 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
     });
 
     const customerName = session.customer_details!.name;
-
     const products = session.line_items!.data.map(item => {
         const product = item.price!.product as Stripe.Product;
         
@@ -75,7 +73,7 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
     });
 
     const totalQuantity = session.line_items!.data.reduce((sum, item) => {
-      return sum + item.quantity!
+      return sum + item.quantity!;
     }, 0)
 
     return {
