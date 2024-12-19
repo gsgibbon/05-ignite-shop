@@ -28,6 +28,7 @@ export const ImageContainer = styled("div", {
 })
 
 export const ProductDetails = styled("div", {
+  width: '100%',
   display: 'flex',
   flexDirection: 'column',
 

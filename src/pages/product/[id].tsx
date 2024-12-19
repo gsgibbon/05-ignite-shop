@@ -3,9 +3,9 @@ import { GetStaticPaths, GetStaticProps } from "next"
 import { stripe } from "@/lib/stripe"
 import Stripe from "stripe"
 import Image from "next/image"
-import axios from "axios"
-import { useState } from "react"
 import Head from "next/head"
+import { useContext } from "react"
+import { ShoppingContext } from "@/context/shoppingContext"
 
 interface ProductProps {
     product: {
@@ -19,27 +19,27 @@ interface ProductProps {
 };
 
 export default function Product({ product }: ProductProps) {
-    const [isCreatingCheckoutSession, setIsCreatingCheckoutSession] = useState(false)
-    
-    async function handleBuyProduct() {
-        setIsCreatingCheckoutSession(true) // como se tudo der certo vai para outra tela ja muda para false automaticamente
+    const { addToCart } = useContext(ShoppingContext);
 
-        try {
-            const response = await axios.post('/api/checkot', {
-                priceId: product.defaultPriceId
-            })
+    function addProduct() {
+        const { id, name, imageUrl, price, description, defaultPriceId } = product;
 
-            const { checkoutUrl } = response.data
+        const numberPrice = Number(
+            price.replace(/\s/g, '').replace('R$', '').replace(/\./g, '').replace(',', '.')
+        );
+ 
+        const newProduct = {
+            id,
+            name,
+            imageUrl,
+            price: numberPrice,
+            description,
+            defaultPriceId,
+            quantity: 1
+        };
 
-            window.location.href = checkoutUrl
-        } catch (error) {
-            // conectar com uma ferramente de observabilidade (DataDog ou Sentry)
-            setIsCreatingCheckoutSession(false)
-
-            alert(`Falha ao direcionar ao checkout!`)
-            console.error(error)
-        }
-    }
+        return addToCart(newProduct);
+    };
 
     return (
         <>
@@ -58,7 +58,7 @@ export default function Product({ product }: ProductProps) {
 
                 <p>{product.description}</p>
 
-                <button disabled={isCreatingCheckoutSession} onClick={handleBuyProduct}>
+                <button onClick={() => addProduct()}>
                   Colocar na sacola
                 </button>
             </ProductDetails>

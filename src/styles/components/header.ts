@@ -1,6 +1,27 @@
 import { styled } from "..";
 
-export const ButtonShoppingContainer = styled('div', {
+export const HeaderContainer = styled('header', {
+  display: 'flex',
+  alignItems: 'center',
+
+  variants: {
+    isSuccessPage: {
+      true: {
+        justifyContent: 'center',
+      },
+      false: {
+        justifyContent: 'space-between',
+      }
+    }
+  },
+
+  padding: '2rem 0',
+  width: '100%',
+  maxWidth: 1180,
+  margin: '0 auto',
+})
+
+export const ButtonShoppingContainer = styled('button', {
   position: 'relative',
 
   display: 'flex',
@@ -13,6 +34,7 @@ export const ButtonShoppingContainer = styled('div', {
 
   color: '$gray500',
   background: '$gray800',
+  cursor: 'pointer',
 
   span: {
     width: '1.375rem',
