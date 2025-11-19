@@ -128,16 +128,18 @@ export const getStaticProps: GetStaticProps = async () => {
     expand: ['data.default_price']
   });
 
-  const products = response.data.map((product) => {
-    const price = product.default_price as Stripe.Price
+  const products = response.data
+    .filter(product => product.default_price)
+    .map((product) => {
+      const price = product.default_price as Stripe.Price;
 
     return { 
       id: product.id,
       name: product.name,
       imageUrl: product.images[0],
-      price: price.unit_amount! / 100,
+      price: price.unit_amount ? price.unit_amount / 100 : 0,
       description: product.description,
-      defaultPriceId: price.id,
+      defaultPriceId: price.id ,
     };
   });
 
